@@ -18,6 +18,10 @@ VIDWISH     = "https://vidwish.live"
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
 
+# Always log to stderr so stdout stays clean for --json mode
+def log(*args, **kwargs):
+    log(*args, **kwargs, file=sys.stderr)
+
 CDN_HOST_MAP = {
     "vault-10.owocdn.top":"10.bigdreamsmalldih.site",
     "vault-11.owocdn.top":"11.bigdreamsmalldih.site",
@@ -142,7 +146,7 @@ def pick_anime(results, query):
     print(f"\n  Found {len(results)} result(s) for '{query}':\n")
     for i, r in enumerate(results, 1):
         print(f"  [{i:2}] {r['title']}")
-        print(f"       {r['meta']}  →  {r['url']}")
+        log(f"       {r['meta']}  →  {r['url']}")
     print()
     while True:
         try:
@@ -164,7 +168,7 @@ def pick_episode(episodes, title):
     ep_min, ep_max = nums[0], nums[-1]
     has_dub = any(e.get("has_dub") for e in episodes)
     print(f"\n  {title}")
-    print(f"  Episodes: {total}  (ep {ep_min}–{ep_max}){' | DUB available' if has_dub else ' | SUB only'}")
+    log(f"  Episodes: {total}  (ep {ep_min}–{ep_max}){' | DUB available' if has_dub else ' | SUB only'}")
     if total <= 20:
         print(f"  Available: {', '.join(str(n) for n in nums)}")
     else:
@@ -183,7 +187,7 @@ def pick_episode(episodes, title):
 def get_watch_page_info(anime_url):
     base_url  = anime_url.rstrip("/")
     watch_url = base_url if "/ep-" in base_url else base_url + "/ep-1"
-    print(f"\n[2] watch   GET {watch_url}")
+    log(f"\n[2] watch   GET {watch_url}")
     r    = _get(watch_url, headers={"referer": f"{BASE}/"})
     soup = BeautifulSoup(r.text, "html.parser")
     wm   = soup.select_one("#watch-main")
@@ -201,7 +205,7 @@ def get_watch_page_info(anime_url):
 
 def _get_episode_list(anikoto_id):
     url = f"{BASE}/ajax/episode/list/{anikoto_id}"
-    print(f"    ep-list GET {url}")
+    log(f"    ep-list GET {url}")
     r    = _get(url, headers={"accept":"application/json","x-requested-with":"XMLHttpRequest","referer":f"{BASE}/"})
     data = parse_json_response(r)
     html = data.get("result","") or data.get("html","")
@@ -231,11 +235,11 @@ def _get_episode_list(anikoto_id):
 def get_mapper_tokens(mal_id, ep_num, timestamp=None):
     ts  = timestamp or int(time.time())
     url = f"{MAPPER_BASE}/{mal_id}/{ep_num}/{ts}"
-    print(f"[3] mapper  GET {url}")
+    log(f"[3] mapper  GET {url}")
     r    = _get(url, headers={"accept":"application/json","origin":BASE,"referer":f"{BASE}/",
                                "sec-fetch-site":"cross-site","sec-fetch-mode":"cors","sec-fetch-dest":"empty"})
     data = r.json()
-    print(f"    cache={data.get('status',{}).get('serves_from','?')!r}")
+    log(f"    cache={data.get('status',{}).get('serves_from','?')!r}")
     tokens, downloads = {}, {}
     for key, val in data.items():
         if key == "status" or not isinstance(val, dict): continue
@@ -244,7 +248,7 @@ def get_mapper_tokens(mal_id, ep_num, timestamp=None):
             token = val[stype].get("url","")
             if token and len(token) > 10 and stype not in tokens:
                 tokens[stype] = token
-                print(f"    [{stype}] token found  (server={key!r})")
+                log(f"    [{stype}] token found  (server={key!r})")
             dl = val[stype].get("download",{})
             if dl: downloads.update(dl)
     if not tokens:
@@ -253,7 +257,7 @@ def get_mapper_tokens(mal_id, ep_num, timestamp=None):
 
 def decrypt_token(token, stype):
     url = f"{BASE}/ajax/server?get={token}"
-    print(f"[4] decrypt GET [{stype.upper()}] {url[:90]}...")
+    log(f"[4] decrypt GET [{stype.upper()}] {url[:90]}...")
     r    = _get(url, headers={"accept":"application/json, text/javascript, */*; q=0.01",
                                "x-requested-with":"XMLHttpRequest","referer":f"{BASE}/",
                                "sec-fetch-site":"same-origin","sec-fetch-mode":"cors","sec-fetch-dest":"empty"})
@@ -263,7 +267,7 @@ def decrypt_token(token, stype):
     result     = data["result"]
     player_url = result.get("url","")
     skip_data  = result.get("skip_data",{})
-    print(f"    player_url: {player_url[:100]}")
+    log(f"    player_url: {player_url[:100]}")
     return player_url, skip_data
 
 def decode_mewcdn_url(player_url, stype):
@@ -273,8 +277,8 @@ def decode_mewcdn_url(player_url, stype):
     m3u8_raw    = b64dec(b64_frag)
     m3u8_direct = remap_cdn(m3u8_raw)
     mewcdn_url  = f"https://mewcdn.online/player/plyr.php#{b64_frag}#"
-    print(f"[5] m3u8    [{stype.upper()}] {m3u8_raw}")
-    if m3u8_direct != m3u8_raw: print(f"            remapped → {m3u8_direct}")
+    log(f"[5] m3u8    [{stype.upper()}] {m3u8_raw}")
+    if m3u8_direct != m3u8_raw: log(f"            remapped → {m3u8_direct}")
     return {"mewcdn_url": mewcdn_url, "m3u8_original": m3u8_raw, "m3u8_direct": m3u8_direct}
 
 # ── server list + realid ──────────────────────────────────────────────────────
@@ -284,7 +288,7 @@ def get_megaplay_vidwish_urls(anikoto_id, ep_slug, ep_num, anime_slug, ep_vrf=""
         link_ids = _get_server_link_ids(f"{BASE}/ajax/server/list", ep_vrf, anikoto_id)
     if not link_ids:
         watch_ep_url = f"{BASE}/watch/{anime_slug}/{ep_slug}"
-        print(f"[6] watch-ep GET {watch_ep_url}")
+        log(f"[6] watch-ep GET {watch_ep_url}")
         r   = _get(watch_ep_url, headers={"referer": f"{BASE}/"})
         vrf = _extract_vrf(r.text, anikoto_id)
         if vrf: link_ids = _get_server_link_ids(f"{BASE}/ajax/server/list", vrf, anikoto_id)
@@ -295,10 +299,10 @@ def get_megaplay_vidwish_urls(anikoto_id, ep_slug, ep_num, anime_slug, ep_vrf=""
                 player_url, _ = decrypt_token(link_ids[stype], stype)
                 realid = _extract_realid_from_embed(player_url, stype)
                 if realid:
-                    print(f"    realid={realid!r} (from {stype} embed)")
+                    log(f"    realid={realid!r} (from {stype} embed)")
                     break
             except Exception as e:
-                print(f"    [warn] decrypt {stype}: {e}")
+                log(f"    [warn] decrypt {stype}: {e}")
     if not realid:
         raise ValueError("Could not find data-realid.")
     return _build_stream_urls(realid)
@@ -312,7 +316,7 @@ def _extract_vrf(page_html, anikoto_id):
 
 def _get_server_link_ids(url, vrf, anikoto_id):
     full_url = f"{url}?servers={vrf}"
-    print(f"    srvlist GET {full_url[:90]}...")
+    log(f"    srvlist GET {full_url[:90]}...")
     try:
         r    = _get(full_url, headers={"accept":"application/json","x-requested-with":"XMLHttpRequest","referer":f"{BASE}/"})
         data = parse_json_response(r)
@@ -326,11 +330,11 @@ def _get_server_link_ids(url, vrf, anikoto_id):
                 li = container.select_one(f'li[data-sv-id="{sv_id}"]')
                 if li and li.get("data-link-id"):
                     link_ids[stype] = li["data-link-id"]
-                    print(f"    [{stype}] sv-id={sv_id!r} link-id found")
+                    log(f"    [{stype}] sv-id={sv_id!r} link-id found")
                     break
         return link_ids
     except Exception as e:
-        print(f"    [warn] server list: {e}")
+        log(f"    [warn] server list: {e}")
         return {}
 
 def _extract_realid_from_embed(player_url, stype):
@@ -371,11 +375,11 @@ def run_by_mal(mal_id, ep_num=None, json_out=False):
                 ep_num = int(input(f"  Episode number for MAL {mal_id}: ").strip())
                 if ep_num >= 1: break
             except (ValueError, KeyboardInterrupt): pass
-            print("  Invalid.")
+            log("  Invalid.")
     else:
-        print(f"  MAL ID={mal_id}  EP={ep_num}")
+        log(f"  MAL ID={mal_id}  EP={ep_num}")
 
-    print(f"\n  MAL ID  : {mal_id}\n  Episode : {ep_num}")
+    log(f"\n  MAL ID  : {mal_id}\n  Episode : {ep_num}")
     mapper_data    = get_mapper_tokens(mal_id, ep_num)
     realid         = None
     stream_urls    = {}
@@ -387,45 +391,45 @@ def run_by_mal(mal_id, ep_num=None, json_out=False):
             if realid is None:
                 realid = _extract_realid_from_embed(player_url, stype)
                 if realid:
-                    print(f"    realid={realid!r} (from {stype} player URL)")
+                    log(f"    realid={realid!r} (from {stype} player URL)")
                     stream_urls = _build_stream_urls(realid)
             decoded = decode_mewcdn_url(player_url, stype)
             decoded["skip_data"] = skip_data
             mewcdn_streams[stype] = decoded
         except Exception as e:
-            print(f"  [warn] {stype}: {e}")
+            log(f"  [warn] {stype}: {e}")
 
     if not realid:
-        print(f"\n  [i] mapper gave mewcdn URL — looking up realid via anikoto...")
+        log(f"\n  [i] mapper gave mewcdn URL — looking up realid via anikoto...")
         try:
             realid, stream_urls = _get_realid_via_anikoto_mal(mal_id, ep_num)
         except Exception as e:
-            print(f"  [warn] anikoto fallback: {e}")
+            log(f"  [warn] anikoto fallback: {e}")
 
     if not realid:
-        print("  [!] Could not get realid — Vidstream/VidCloud not available.")
+        log("  [!] Could not get realid — Vidstream/VidCloud not available.")
 
     result = {"anime": f"MAL:{mal_id}", "mal_id": mal_id, "episode": ep_num,
               "anikoto_id": None, "mewcdn_streams": mewcdn_streams,
               "stream_urls": stream_urls, "downloads": mapper_data.get("downloads",{})}
-    if json_out: print(json.dumps(result, indent=2, ensure_ascii=False))
+    if json_out: log(json.dumps(result, indent=2, ensure_ascii=False))
     else:        _print_result(result, W)
     return result
 
 def _get_realid_via_anikoto_mal(mal_id, ep_num):
-    print(f"    Searching anikoto for MAL {mal_id}...")
+    log(f"    Searching anikoto for MAL {mal_id}...")
     mal_r = sess.get(f"https://api.jikan.moe/v4/anime/{mal_id}", timeout=10)
     if mal_r.status_code != 200:
         raise ValueError(f"Jikan API {mal_r.status_code}")
     mal_data   = mal_r.json().get("data",{})
     search_q   = mal_data.get("title_english") or mal_data.get("title","")
-    print(f"    Title: {search_q!r}")
+    log(f"    Title: {search_q!r}")
     results = _search_filter_page(search_q) or _search_ajax(search_q)
     for anime in results[:6]:
         try:
             info = get_watch_page_info(anime["url"])
             if info["mal_id"] != mal_id: continue
-            print(f"    Matched: {anime['title']!r}  anikoto_id={info['anikoto_id']}")
+            log(f"    Matched: {anime['title']!r}  anikoto_id={info['anikoto_id']}")
             ep = next((e for e in info["episodes"] if e["num"] == ep_num), None)
             if ep is None:
                 ep = {"num": ep_num, "slug": f"ep-{ep_num}", "mal": mal_id,
@@ -437,33 +441,33 @@ def _get_realid_via_anikoto_mal(mal_id, ep_num):
                 ep_vrf=ep.get("vrf",""), ep_id=ep.get("ep_id",""))
             return su["realid"], su
         except Exception as e:
-            print(f"    [skip] {anime.get('title','?')}: {e}")
+            log(f"    [skip] {anime.get('title','?')}: {e}")
     raise ValueError(f"Could not match MAL {mal_id} on anikoto")
 
 # ── search mode orchestrator ──────────────────────────────────────────────────
 def run(query, ep_num=None, json_out=False):
     W = 68
-    print(f"\n[1] search  '{query}'")
+    log(f"\n[1] search  '{query}'")
     results    = search_anime(query)
     anime      = pick_anime(results, query)
-    print(f"\n  Selected: {anime['title']}\n  URL:      {anime['url']}")
+    log(f"\n  Selected: {anime['title']}\n  URL:      {anime['url']}")
     anime_slug = anime["url"].rstrip("/").split("/watch/")[-1].split("/")[0]
     info       = get_watch_page_info(anime["url"])
-    print(f"\n  Anikoto ID : {info['anikoto_id']}")
-    print(f"  MAL ID     : {info['mal_id']}")
-    print(f"  Episodes   : {len(info['episodes'])} found")
+    log(f"\n  Anikoto ID : {info['anikoto_id']}")
+    log(f"  MAL ID     : {info['mal_id']}")
+    log(f"  Episodes   : {len(info['episodes'])} found")
 
     if ep_num is None:
         ep_num = pick_episode(info["episodes"], anime["title"])
     else:
-        print(f"  Episode    : {ep_num} (from --ep flag)")
+        log(f"  Episode    : {ep_num} (from --ep flag)")
 
     ep = next((e for e in info["episodes"] if e["num"] == ep_num), None)
     if ep is None:
         ep = {"num": ep_num, "slug": f"ep-{ep_num}", "mal": info["mal_id"],
               "timestamp": info["timestamp"], "ep_id": None, "vrf": ""}
     else:
-        print(f"  Episode {ep_num}: slug={ep['slug']!r}  ep_id={ep['ep_id']!r}")
+        log(f"  Episode {ep_num}: slug={ep['slug']!r}  ep_id={ep['ep_id']!r}")
 
     mal_id    = ep.get("mal") or info["mal_id"]
     timestamp = ep.get("timestamp") or info["timestamp"]
@@ -478,7 +482,7 @@ def run(query, ep_num=None, json_out=False):
             decoded["skip_data"] = skip_data
             mewcdn_streams[stype] = decoded
         except Exception as e:
-            print(f"  [warn] mewcdn {stype}: {e}")
+            log(f"  [warn] mewcdn {stype}: {e}")
 
     stream_urls = {}
     try:
@@ -487,12 +491,12 @@ def run(query, ep_num=None, json_out=False):
             ep_num=ep_num, anime_slug=anime_slug,
             ep_vrf=ep.get("vrf",""), ep_id=ep.get("ep_id",""))
     except Exception as e:
-        print(f"\n  [warn] megaplay/vidwish: {e}")
+        log(f"\n  [warn] megaplay/vidwish: {e}")
 
     result = {"anime": anime["title"], "mal_id": mal_id, "episode": ep_num,
               "anikoto_id": info["anikoto_id"], "mewcdn_streams": mewcdn_streams,
               "stream_urls": stream_urls, "downloads": mapper_data.get("downloads",{})}
-    if json_out: print(json.dumps(result, indent=2, ensure_ascii=False))
+    if json_out: log(json.dumps(result, indent=2, ensure_ascii=False))
     else:        _print_result(result, W)
     return result
 
