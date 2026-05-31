@@ -227,9 +227,9 @@
         throw new Error(`Trigger failed (${tr.status}): ${e.message||'check token & repo'}`);
       }
 
-      // 2. Poll for run — start after 2s, check every 2s (fast!)
+      // 2. Poll for run — start after 3s, check every 2s (fast!)
       setStatus('<span class="spin"></span> Waiting for run...');
-      await sleep(2000);
+      await sleep(3000);
       const runId = await pollForRun(hdrs, t0);
       setFill(40);
       animateFill(40, 85, 20000);  // expect ~15s total
@@ -255,22 +255,36 @@
   }
 
   async function pollForRun(hdrs, t0) {
-    // Poll every 2s for up to 30s
-    for (let i = 0; i < 15; i++) {
+    // Poll every 2s for up to 40s
+    // Just grab the most recent workflow_dispatch run — no timestamp filtering
+    let lastRunId = null;
+
+    // First, get any existing runs before we triggered (to skip them)
+    try {
+      const pre = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/actions/runs?per_page=3&event=workflow_dispatch`,
+        { headers: hdrs }
+      );
+      const preData = await pre.json();
+      if (preData.workflow_runs?.length) {
+        lastRunId = preData.workflow_runs[0].id;
+      }
+    } catch(e) {}
+
+    for (let i = 0; i < 20; i++) {
       await sleep(2000);
       const res  = await fetch(
-        `https://api.github.com/repos/${OWNER}/${REPO}/actions/runs?per_page=5&event=workflow_dispatch`,
+        `https://api.github.com/repos/${OWNER}/${REPO}/actions/runs?per_page=3&event=workflow_dispatch`,
         { headers: hdrs }
       );
       const data = await res.json();
-      // Find a run created after we triggered (within last 60s)
-      const run = data.workflow_runs?.find(r => {
-        const created = new Date(r.created_at).getTime();
-        return created >= t0 - 5000;
-      });
-      if (run) return run.id;
+      const run  = data.workflow_runs?.[0];
+      // Accept any run that is newer than what existed before we triggered
+      if (run && run.id !== lastRunId) return run.id;
+      // Also accept if it's the same run but now in_progress (just started)
+      if (run && run.status === 'in_progress') return run.id;
     }
-    throw new Error('Timed out waiting for run to appear (30s).');
+    throw new Error('Timed out waiting for run to appear (40s). Check Actions tab.');
   }
 
   async function waitForCompletion(hdrs, runId) {
