@@ -20,7 +20,8 @@ UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
 
 # Always log to stderr so stdout stays clean for --json mode
 def log(*args, **kwargs):
-    log(*args, **kwargs, file=sys.stderr)
+    kwargs.pop('file', None)
+    print(*args, file=sys.stderr, **kwargs)
 
 CDN_HOST_MAP = {
     "vault-10.owocdn.top":"10.bigdreamsmalldih.site",
