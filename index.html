@@ -6,95 +6,143 @@
   <title>Anime Stream Finder</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Segoe UI',sans-serif;background:#0d0d0d;color:#e0e0e0;
-         min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-    .card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;
-          padding:32px;width:100%;max-width:640px}
-    h1{font-size:1.4rem;margin-bottom:5px;color:#fff}
-    .sub{font-size:.8rem;color:#555;margin-bottom:26px}
-    .field{margin-bottom:14px}
-    label{display:block;font-size:.75rem;color:#666;margin-bottom:5px}
-    input{width:100%;padding:10px 14px;background:#111;border:1px solid #2e2e2e;
-          border-radius:8px;color:#fff;font-size:.95rem;outline:none;transition:border-color .2s}
-    input:focus{border-color:#555}
-    input::placeholder{color:#3a3a3a}
-    .row{display:flex;gap:12px}
+    body{font-family:'Segoe UI',sans-serif;background:#0a0a0a;color:#ddd;min-height:100vh;padding:16px}
+    .wrap{max-width:900px;margin:0 auto}
+    h1{font-size:1.3rem;color:#fff;margin-bottom:4px}
+    .sub{font-size:.75rem;color:#444;margin-bottom:20px}
+
+    /* Search card */
+    .card{background:#141414;border:1px solid #222;border-radius:10px;padding:20px;margin-bottom:16px}
+    .token-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:14px}
+    .token-row .field{flex:1}
+    .row{display:flex;gap:10px}
     .row .field{flex:1}
-    button.primary{width:100%;padding:12px;background:#e50914;color:#fff;border:none;
-                   border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer;
-                   margin-top:4px;transition:background .2s,opacity .2s}
-    button.primary:hover:not(:disabled){background:#c40812}
-    button.primary:disabled{opacity:.4;cursor:not-allowed}
-    #status{margin-top:16px;font-size:.82rem;color:#555;min-height:18px;
-            display:flex;align-items:center;gap:8px}
-    #status.error{color:#e55}
+    .field{margin-bottom:0}
+    label{display:block;font-size:.7rem;color:#555;margin-bottom:5px;letter-spacing:.3px}
+    input{width:100%;padding:9px 12px;background:#0d0d0d;border:1px solid #252525;
+          border-radius:7px;color:#fff;font-size:.9rem;outline:none;transition:border-color .15s}
+    input:focus{border-color:#444}
+    input::placeholder{color:#333}
+    .btn{padding:9px 18px;background:#e50914;color:#fff;border:none;border-radius:7px;
+         font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s,opacity .15s}
+    .btn:hover:not(:disabled){background:#c40812}
+    .btn:disabled{opacity:.35;cursor:not-allowed}
+    .btn.sm{padding:5px 12px;font-size:.72rem;background:#1e1e1e;color:#aaa;border:1px solid #2a2a2a}
+    .btn.sm:hover:not(:disabled){background:#252525}
+
+    /* Status */
+    #status{font-size:.78rem;color:#555;margin-top:12px;min-height:16px;display:flex;align-items:center;gap:7px}
+    #status.err{color:#e55}
     #status.ok{color:#5c5}
-    .progress-bar{height:2px;background:#1e1e1e;border-radius:2px;margin-top:12px;
-                  overflow:hidden;display:none}
-    .progress-bar.active{display:block}
-    .progress-fill{height:100%;background:#e50914;border-radius:2px;transition:width .5s ease}
-    #results{margin-top:26px;display:none}
-    .section-title{font-size:.7rem;text-transform:uppercase;letter-spacing:1.2px;
-                   color:#555;margin-bottom:9px;margin-top:3px}
-    .url-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
-    .url-label{font-size:.72rem;color:#666;width:110px;flex-shrink:0}
-    .url-link{flex:1;font-size:.78rem;color:#4af;text-decoration:none;
-              overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .url-link:hover{text-decoration:underline}
-    .copy-btn{padding:3px 9px;font-size:.7rem;background:#222;color:#aaa;
-              border:1px solid #333;border-radius:5px;cursor:pointer;flex-shrink:0;
-              transition:background .15s}
-    .copy-btn:hover{background:#2e2e2e}
-    .divider{border:none;border-top:1px solid #1e1e1e;margin:13px 0}
-    .realid-badge{display:inline-flex;align-items:center;gap:6px;background:#161616;
-                  border:1px solid #2a2a2a;border-radius:6px;padding:4px 12px;
-                  font-size:.78rem;color:#888;margin-bottom:13px}
-    .realid-badge span{color:#fff;font-weight:600}
-    .spinner{display:inline-block;width:13px;height:13px;border:2px solid #333;
-             border-top-color:#999;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .token-box{margin-bottom:20px;padding:13px;background:#111;border:1px solid #222;border-radius:8px}
-    .token-box label{color:#555;font-size:.72rem;margin-bottom:7px}
-    .token-box input{background:#0c0c0c;border-color:#1e1e1e;font-size:.82rem}
-    .token-hint{font-size:.7rem;color:#444;margin-top:6px;line-height:1.5}
-    .token-hint a{color:#4af;text-decoration:none}
-    .token-hint a:hover{text-decoration:underline}
-    .anime-info{font-size:.78rem;color:#666;margin-bottom:13px}
-    .anime-info strong{color:#aaa}
+    .bar{height:2px;background:#1a1a1a;border-radius:2px;margin-top:10px;overflow:hidden;display:none}
+    .bar.on{display:block}
+    .fill{height:100%;background:#e50914;border-radius:2px;transition:width .4s ease}
+    .spin{display:inline-block;width:12px;height:12px;border:2px solid #2a2a2a;
+          border-top-color:#888;border-radius:50%;animation:sp .6s linear infinite;flex-shrink:0}
+    @keyframes sp{to{transform:rotate(360deg)}}
+
+    /* Player area */
+    #player-area{display:none}
+    .anime-title{font-size:1rem;color:#fff;font-weight:600;margin-bottom:14px}
+    .anime-title span{color:#888;font-weight:400;font-size:.85rem;margin-left:8px}
+
+    /* Server tabs */
+    .server-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+    .stab{padding:6px 14px;background:#1a1a1a;border:1px solid #252525;border-radius:6px;
+          font-size:.75rem;color:#888;cursor:pointer;transition:all .15s;user-select:none}
+    .stab:hover{background:#222;color:#ccc}
+    .stab.active{background:#e50914;border-color:#e50914;color:#fff;font-weight:600}
+    .stab.disabled{opacity:.3;cursor:not-allowed}
+
+    /* iframe player */
+    .player-wrap{position:relative;width:100%;padding-top:56.25%;background:#000;
+                 border-radius:8px;overflow:hidden;margin-bottom:14px}
+    .player-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
+    .player-placeholder{position:absolute;top:0;left:0;width:100%;height:100%;
+                        display:flex;align-items:center;justify-content:center;
+                        flex-direction:column;gap:10px;color:#444;font-size:.85rem}
+    .player-placeholder svg{width:48px;height:48px;opacity:.3}
+
+    /* Downloads */
+    .dl-section{margin-top:4px}
+    .dl-title{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:#444;margin-bottom:8px}
+    .dl-links{display:flex;flex-wrap:wrap;gap:6px}
+    .dl-link{padding:5px 12px;background:#141414;border:1px solid #222;border-radius:6px;
+             font-size:.72rem;color:#4af;text-decoration:none;transition:background .15s}
+    .dl-link:hover{background:#1a1a1a}
+
+    /* URL list */
+    .url-section{margin-top:14px}
+    .url-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .url-lbl{font-size:.7rem;color:#555;width:100px;flex-shrink:0}
+    .url-val{flex:1;font-size:.72rem;color:#4af;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .copy-btn{padding:2px 8px;font-size:.65rem;background:#1a1a1a;color:#888;
+              border:1px solid #252525;border-radius:4px;cursor:pointer;flex-shrink:0}
+    .copy-btn:hover{background:#222}
+    .realid{display:inline-block;background:#1a1a1a;border:1px solid #252525;
+            border-radius:5px;padding:3px 10px;font-size:.72rem;color:#666;margin-bottom:12px}
+    .realid b{color:#aaa}
+    .divider{border:none;border-top:1px solid #1a1a1a;margin:14px 0}
   </style>
 </head>
 <body>
-<div class="card">
+<div class="wrap">
   <h1>🎌 Anime Stream Finder</h1>
-  <p class="sub">Get Megaplay &amp; Vidwish URLs via MAL ID — powered by GitHub Actions</p>
+  <p class="sub">Megaplay · Vidwish · Kiwi streams via MAL ID — GitHub Actions backend</p>
 
-  <div class="token-box">
-    <label>GitHub Personal Access Token (Actions: Read &amp; Write)</label>
-    <input type="password" id="gh-token" placeholder="github_pat_xxxxxxxxxxxx" autocomplete="off"/>
-    <p class="token-hint">
-      <a href="https://github.com/settings/tokens?type=beta" target="_blank">Create token →</a>
-      &nbsp;·&nbsp; Stored in sessionStorage only, never sent anywhere except api.github.com
-    </p>
-  </div>
-
-  <div class="row">
-    <div class="field">
-      <label>MAL ID</label>
-      <input type="number" id="mal-id" placeholder="e.g. 1735" min="1"/>
+  <div class="card">
+    <div class="token-row">
+      <div class="field">
+        <label>GitHub Token (Actions: Read &amp; Write) — <a href="https://github.com/settings/tokens?type=beta" target="_blank" style="color:#4af;text-decoration:none">Create →</a></label>
+        <input type="password" id="gh-token" placeholder="github_pat_xxxx" autocomplete="off"/>
+      </div>
     </div>
-    <div class="field">
-      <label>Episode</label>
-      <input type="number" id="episode" placeholder="e.g. 1" min="1"/>
+    <div class="row">
+      <div class="field">
+        <label>MAL ID</label>
+        <input type="number" id="mal-id" placeholder="e.g. 1735" min="1"/>
+      </div>
+      <div class="field">
+        <label>Episode</label>
+        <input type="number" id="episode" placeholder="e.g. 1" min="1"/>
+      </div>
+      <div class="field" style="display:flex;align-items:flex-end">
+        <button class="btn" id="go-btn" onclick="getStreams()" style="width:100%">▶ Get Streams</button>
+      </div>
+    </div>
+    <div class="bar" id="bar"><div class="fill" id="fill" style="width:0%"></div></div>
+    <div id="status"></div>
+  </div>
+
+  <!-- Player + results -->
+  <div id="player-area">
+    <div class="card">
+      <div class="anime-title" id="anime-title">Loading...</div>
+
+      <!-- Server tabs -->
+      <div class="server-tabs" id="server-tabs"></div>
+
+      <!-- Player -->
+      <div class="player-wrap" id="player-wrap">
+        <div class="player-placeholder" id="player-placeholder">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Select a server above
+        </div>
+        <iframe id="player-frame" allowfullscreen allow="autoplay; fullscreen" style="display:none"></iframe>
+      </div>
+
+      <!-- Downloads -->
+      <div class="dl-section" id="dl-section" style="display:none">
+        <div class="dl-title">Downloads</div>
+        <div class="dl-links" id="dl-links"></div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- All URLs -->
+      <div class="url-section" id="url-section"></div>
     </div>
   </div>
-
-  <button class="primary" id="search-btn" onclick="getStreams()">Get Stream URLs</button>
-
-  <div class="progress-bar" id="progress-bar">
-    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
-  </div>
-  <div id="status"></div>
-  <div id="results"></div>
 </div>
 
 <script>
@@ -102,8 +150,9 @@
   const REPO  = 'doss';
 
   const $ = id => document.getElementById(id);
-  let progressTimer = null;
+  let fillTimer = null;
 
+  // Restore token
   window.addEventListener('load', () => {
     const t = sessionStorage.getItem('gh_token');
     if (t) $('gh-token').value = t;
@@ -111,172 +160,284 @@
   $('gh-token').addEventListener('input', e => sessionStorage.setItem('gh_token', e.target.value.trim()));
   ['mal-id','episode'].forEach(id => $(id).addEventListener('keydown', e => { if(e.key==='Enter') getStreams(); }));
 
+  // ── State ──────────────────────────────────────────────────────────────────
+  let streamData = null;
+
+  // ── UI helpers ─────────────────────────────────────────────────────────────
   function setStatus(msg, type='') { const el=$('status'); el.className=type; el.innerHTML=msg; }
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
   function setLoading(on) {
-    $('search-btn').disabled = on;
-    $('search-btn').textContent = on ? 'Fetching...' : 'Get Stream URLs';
-    const pb = $('progress-bar');
-    if (on) { pb.classList.add('active'); animateProgress(0, 30, 8000); }
-    else {
-      clearTimeout(progressTimer);
-      $('progress-fill').style.width = '100%';
-      setTimeout(() => { pb.classList.remove('active'); $('progress-fill').style.width='0%'; }, 600);
+    $('go-btn').disabled = on;
+    $('go-btn').textContent = on ? '⏳ Fetching...' : '▶ Get Streams';
+    const bar = $('bar');
+    if (on) {
+      bar.classList.add('on');
+      animateFill(0, 25, 5000);   // 0→25% while waiting for run
+    } else {
+      clearTimeout(fillTimer);
+      $('fill').style.width = '100%';
+      setTimeout(() => { bar.classList.remove('on'); $('fill').style.width='0%'; }, 500);
     }
   }
 
-  function animateProgress(from, to, duration) {
-    const fill = $('progress-fill'), steps = 20, stepMs = duration/steps, stepPct = (to-from)/steps;
-    let current = from;
+  function animateFill(from, to, ms) {
+    clearTimeout(fillTimer);
+    const steps = 30, stepMs = ms/steps, stepPct = (to-from)/steps;
+    let cur = from;
     function tick() {
-      current += stepPct;
-      fill.style.width = Math.min(current, 95) + '%';
-      if (current < to) progressTimer = setTimeout(tick, stepMs);
+      cur += stepPct;
+      $('fill').style.width = Math.min(cur, 95) + '%';
+      if (cur < to) fillTimer = setTimeout(tick, stepMs);
     }
     tick();
   }
+  function setFill(pct) { clearTimeout(fillTimer); $('fill').style.width = pct+'%'; }
 
-  function setProgress(pct) { clearTimeout(progressTimer); $('progress-fill').style.width = pct+'%'; }
-
+  // ── Main fetch ─────────────────────────────────────────────────────────────
   async function getStreams() {
     const token   = ($('gh-token').value || sessionStorage.getItem('gh_token') || '').trim();
     const malId   = $('mal-id').value.trim();
     const episode = $('episode').value.trim();
-    if (!token)   return setStatus('⚠ Enter your GitHub token.', 'error');
-    if (!malId)   return setStatus('⚠ Enter a MAL ID.', 'error');
-    if (!episode) return setStatus('⚠ Enter an episode number.', 'error');
+    if (!token)   return setStatus('⚠ Enter your GitHub token.', 'err');
+    if (!malId)   return setStatus('⚠ Enter a MAL ID.', 'err');
+    if (!episode) return setStatus('⚠ Enter an episode number.', 'err');
     sessionStorage.setItem('gh_token', token);
-    setLoading(true);
-    $('results').style.display = 'none';
 
-    const headers = {
+    setLoading(true);
+    $('player-area').style.display = 'none';
+
+    const hdrs = {
       'Authorization': `Bearer ${token}`,
       'Accept': 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
     };
 
     try {
-      setStatus('<span class="spinner"></span> Triggering GitHub Actions workflow...');
-      const triggerRes = await fetch(
+      // 1. Trigger
+      setStatus('<span class="spin"></span> Triggering workflow...');
+      const t0 = Date.now();
+      const tr = await fetch(
         `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/get_stream.yml/dispatches`,
-        { method:'POST', headers:{...headers,'Content-Type':'application/json'},
+        { method:'POST', headers:{...hdrs,'Content-Type':'application/json'},
           body: JSON.stringify({ ref:'main', inputs:{ mal_id:malId, episode:episode } }) }
       );
-      if (!triggerRes.ok) {
-        const err = await triggerRes.json().catch(()=>({}));
-        throw new Error(`Trigger failed (${triggerRes.status}): ${err.message||'check token & repo'}`);
+      if (!tr.ok) {
+        const e = await tr.json().catch(()=>({}));
+        throw new Error(`Trigger failed (${tr.status}): ${e.message||'check token & repo'}`);
       }
 
-      setStatus('<span class="spinner"></span> Waiting for run to start...');
-      await sleep(4000);
-      const runId = await pollForRun(headers);
-      setProgress(35);
-      setStatus(`<span class="spinner"></span> Run #${runId} in progress (~30–60s)...`);
-      animateProgress(35, 85, 50000);
+      // 2. Poll for run — start after 2s, check every 2s (fast!)
+      setStatus('<span class="spin"></span> Waiting for run...');
+      await sleep(2000);
+      const runId = await pollForRun(hdrs, t0);
+      setFill(40);
+      animateFill(40, 85, 20000);  // expect ~15s total
+      setStatus(`<span class="spin"></span> Run #${runId} — usually done in ~15s...`);
 
-      await waitForCompletion(headers, runId);
-      setProgress(90);
-      setStatus('<span class="spinner"></span> Downloading result...');
+      // 3. Wait for completion — poll every 2s
+      await waitForCompletion(hdrs, runId);
+      setFill(92);
+      setStatus('<span class="spin"></span> Downloading result...');
 
-      const result = await downloadArtifact(headers, runId);
-      renderResults(result, malId, episode);
+      // 4. Get artifact
+      const result = await downloadArtifact(hdrs, runId);
+      streamData = result;
+      renderAll(result, malId, episode);
       setLoading(false);
-      setStatus('✓ Done.', 'ok');
+      setStatus(`✓ Done in ${((Date.now()-t0)/1000).toFixed(1)}s`, 'ok');
+
     } catch(err) {
       setLoading(false);
-      setStatus(`✗ ${err.message}`, 'error');
+      setStatus(`✗ ${err.message}`, 'err');
       console.error(err);
     }
   }
 
-  async function pollForRun(headers) {
-    for (let i=0; i<20; i++) {
+  async function pollForRun(hdrs, t0) {
+    // Poll every 2s for up to 30s
+    for (let i = 0; i < 15; i++) {
       await sleep(2000);
-      const res  = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/actions/runs?per_page=5&event=workflow_dispatch`, {headers});
+      const res  = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/actions/runs?per_page=5&event=workflow_dispatch`,
+        { headers: hdrs }
+      );
       const data = await res.json();
-      const run  = data.workflow_runs?.[0];
+      // Find a run created after we triggered (within last 60s)
+      const run = data.workflow_runs?.find(r => {
+        const created = new Date(r.created_at).getTime();
+        return created >= t0 - 5000;
+      });
       if (run) return run.id;
     }
-    throw new Error('Timed out waiting for workflow run (40s).');
+    throw new Error('Timed out waiting for run to appear (30s).');
   }
 
-  async function waitForCompletion(headers, runId) {
-    for (let i=0; i<40; i++) {
-      await sleep(5000);
-      const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/actions/runs/${runId}`, {headers});
+  async function waitForCompletion(hdrs, runId) {
+    // Poll every 2s for up to 3 min
+    for (let i = 0; i < 90; i++) {
+      await sleep(2000);
+      const res = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/actions/runs/${runId}`,
+        { headers: hdrs }
+      );
       const run = await res.json();
-      if (run.status==='completed') {
-        if (run.conclusion!=='success') throw new Error(`Workflow ended: ${run.conclusion}. Check Actions tab.`);
+      if (run.status === 'completed') {
+        if (run.conclusion !== 'success')
+          throw new Error(`Workflow ${run.conclusion}. Check Actions tab for error details.`);
         return;
       }
     }
-    throw new Error('Workflow timed out after 3.5 minutes.');
+    throw new Error('Workflow timed out after 3 minutes.');
   }
 
-  async function downloadArtifact(headers, runId) {
-    const res  = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/actions/runs/${runId}/artifacts`, {headers});
+  async function downloadArtifact(hdrs, runId) {
+    const res  = await fetch(
+      `https://api.github.com/repos/${OWNER}/${REPO}/actions/runs/${runId}/artifacts`,
+      { headers: hdrs }
+    );
     const data = await res.json();
-    const art  = data.artifacts?.find(a => a.name==='stream-result');
+    const art  = data.artifacts?.find(a => a.name === 'stream-result');
     if (!art) throw new Error('Result artifact not found.');
-    const dlRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/actions/artifacts/${art.id}/zip`, {headers});
+    const dlRes = await fetch(
+      `https://api.github.com/repos/${OWNER}/${REPO}/actions/artifacts/${art.id}/zip`,
+      { headers: hdrs }
+    );
     if (!dlRes.ok) throw new Error(`Artifact download failed (${dlRes.status}).`);
     const blob = await dlRes.blob();
     const zip  = await JSZip.loadAsync(blob);
     const file = zip.file('result.json');
-    if (!file) throw new Error('result.json not found in artifact zip.');
+    if (!file) throw new Error('result.json not in artifact zip.');
     return JSON.parse(await file.async('string'));
   }
 
-  function renderResults(data, malId, episode) {
-    const su=data.stream_urls||{}, ms=data.mewcdn_streams||{}, dl=data.downloads||{};
-    const el=$('results');
-    let html='';
-    const title = data.anime && !data.anime.startsWith('MAL:') ? data.anime : `MAL ${malId}`;
-    html += `<div class="anime-info"><strong>${esc(title)}</strong> — Episode ${esc(episode)}</div>`;
+  // ── Render ─────────────────────────────────────────────────────────────────
+  function renderAll(data, malId, episode) {
+    const su = data.stream_urls    || {};
+    const ms = data.mewcdn_streams || {};
+    const dl = data.downloads      || {};
+    const title = (data.anime && !data.anime.startsWith('MAL:')) ? data.anime : `MAL ${malId}`;
+
+    $('anime-title').innerHTML = `${esc(title)} <span>Episode ${esc(episode)}</span>`;
+
+    // Build server list
+    const servers = [];
+
     if (su.realid) {
-      html += `<div class="realid-badge">realid = <span>${esc(su.realid)}</span></div>`;
-      html += `<div class="section-title">Megaplay / Vidwish</div>`;
+      if (su.megaplay_sub) servers.push({ label:'Megaplay SUB', url: su.megaplay_sub, type:'embed' });
+      if (su.megaplay_dub) servers.push({ label:'Megaplay DUB', url: su.megaplay_dub, type:'embed' });
+      if (su.vidwish_sub)  servers.push({ label:'Vidwish SUB',  url: su.vidwish_sub,  type:'embed' });
+      if (su.vidwish_dub)  servers.push({ label:'Vidwish DUB',  url: su.vidwish_dub,  type:'embed' });
+    }
+
+    // Kiwi (mewcdn m3u8 streams)
+    for (const [stype, s] of Object.entries(ms)) {
+      if (s.m3u8_direct) {
+        servers.push({ label:`Kiwi ${stype.toUpperCase()}`, url: s.m3u8_direct, type:'m3u8',
+                       player: s.mewcdn_url });
+      }
+    }
+
+    // Render tabs
+    const tabsEl = $('server-tabs');
+    tabsEl.innerHTML = '';
+    servers.forEach((srv, i) => {
+      const tab = document.createElement('div');
+      tab.className = 'stab' + (i===0?' active':'');
+      tab.textContent = srv.label;
+      tab.onclick = () => selectServer(i, servers);
+      tabsEl.appendChild(tab);
+    });
+
+    // Downloads
+    const dlKeys = Object.keys(dl);
+    if (dlKeys.length) {
+      $('dl-section').style.display = 'block';
+      $('dl-links').innerHTML = dlKeys.map(q =>
+        `<a class="dl-link" href="${esc(dl[q])}" target="_blank" rel="noopener">${esc(q)}</a>`
+      ).join('');
+    }
+
+    // URL list
+    let urlHtml = '';
+    if (su.realid) {
+      urlHtml += `<div class="realid">realid = <b>${esc(su.realid)}</b></div>`;
       [['Megaplay SUB',su.megaplay_sub],['Megaplay DUB',su.megaplay_dub],
-       ['Vidwish  SUB',su.vidwish_sub], ['Vidwish  DUB',su.vidwish_dub]]
-        .forEach(([l,u]) => { if(u) html+=urlRow(l,u); });
-      html += '<hr class="divider">';
-    } else {
-      html += `<div class="section-title" style="color:#633">Megaplay/Vidwish — not available</div><hr class="divider">`;
+       ['Vidwish SUB',su.vidwish_sub],  ['Vidwish DUB',su.vidwish_dub]]
+        .forEach(([l,u]) => { if(u) urlHtml += urlRow(l,u); });
     }
-    for (const [stype,s] of Object.entries(ms)) {
-      html += `<div class="section-title">mewcdn ${stype.toUpperCase()} — HLS</div>`;
-      if (s.m3u8_direct) html += urlRow('Direct m3u8', s.m3u8_direct);
-      if (s.mewcdn_url)  html += urlRow('Player URL',  s.mewcdn_url);
-      const intro=(s.skip_data||{}).intro||[0,0], outro=(s.skip_data||{}).outro||[0,0];
-      if (intro[1]>0) html+=`<div class="url-row"><span class="url-label" style="color:#555">Skip intro</span><span style="font-size:.78rem;color:#666">${intro[0]}s → ${intro[1]}s</span></div>`;
-      if (outro[1]>0) html+=`<div class="url-row"><span class="url-label" style="color:#555">Skip outro</span><span style="font-size:.78rem;color:#666">${outro[0]}s → ${outro[1]}s</span></div>`;
-      html += '<hr class="divider">';
+    for (const [stype, s] of Object.entries(ms)) {
+      if (s.m3u8_direct) urlHtml += urlRow(`Kiwi ${stype.toUpperCase()} m3u8`, s.m3u8_direct);
+      if (s.mewcdn_url)  urlHtml += urlRow(`Kiwi ${stype.toUpperCase()} player`, s.mewcdn_url);
     }
-    if (Object.keys(dl).length) {
-      html += `<div class="section-title">Downloads</div>`;
-      for (const [q,u] of Object.entries(dl)) html += urlRow(q,u);
+    $('url-section').innerHTML = urlHtml;
+
+    // Show player area and auto-select first server
+    $('player-area').style.display = 'block';
+    if (servers.length > 0) selectServer(0, servers);
+    else {
+      $('player-placeholder').style.display = 'flex';
+      $('player-frame').style.display = 'none';
     }
-    el.innerHTML = html;
-    el.style.display = 'block';
+
+    // Scroll to player
+    $('player-area').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  function selectServer(idx, servers) {
+    // Update tabs
+    document.querySelectorAll('.stab').forEach((t,i) => t.classList.toggle('active', i===idx));
+
+    const srv = servers[idx];
+    const frame = $('player-frame');
+    const placeholder = $('player-placeholder');
+
+    if (srv.type === 'embed') {
+      // Direct embed URL (megaplay/vidwish)
+      frame.src = srv.url;
+      frame.style.display = 'block';
+      placeholder.style.display = 'none';
+    } else if (srv.type === 'm3u8') {
+      // For m3u8, use the mewcdn player URL if available, else show link
+      if (srv.player) {
+        frame.src = srv.player;
+        frame.style.display = 'block';
+        placeholder.style.display = 'none';
+      } else {
+        frame.style.display = 'none';
+        placeholder.style.display = 'flex';
+        placeholder.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:40px;opacity:.3"><path d="M8 5v14l11-7z"/></svg>
+          <span style="font-size:.8rem">m3u8 stream — open in player:</span>
+          <a href="${esc(srv.url)}" target="_blank" class="btn sm" style="margin-top:4px">Open m3u8 ↗</a>`;
+      }
+    }
   }
 
   function urlRow(label, url) {
-    const id = 'u'+Math.random().toString(36).slice(2,9);
+    const id = 'u'+Math.random().toString(36).slice(2,8);
     return `<div class="url-row">
-      <span class="url-label">${esc(label)}</span>
-      <a class="url-link" id="${id}" href="${esc(url)}" target="_blank" rel="noopener" title="${esc(url)}">${esc(url)}</a>
-      <button class="copy-btn" onclick="copyUrl('${id}')">Copy</button>
+      <span class="url-lbl">${esc(label)}</span>
+      <span class="url-val" title="${esc(url)}">${esc(url)}</span>
+      <button class="copy-btn" onclick="cp('${id}','${esc(url)}')">Copy</button>
     </div>`;
   }
 
-  function copyUrl(id) {
-    const el=document.getElementById(id);
-    navigator.clipboard.writeText(el.href).then(()=>{ el.style.color='#5c5'; setTimeout(()=>el.style.color='',1500); });
+  function cp(id, url) {
+    navigator.clipboard.writeText(url).then(() => {
+      const btns = document.querySelectorAll('.copy-btn');
+      // find by onclick attr
+      document.querySelectorAll('.copy-btn').forEach(b => {
+        if (b.getAttribute('onclick').includes(id)) {
+          b.textContent = '✓';
+          setTimeout(() => b.textContent = 'Copy', 1500);
+        }
+      });
+    });
   }
 
   function esc(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
