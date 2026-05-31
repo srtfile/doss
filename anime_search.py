@@ -418,31 +418,85 @@ def run_by_mal(mal_id, ep_num=None, json_out=False):
     return result
 
 def _get_realid_via_anikoto_mal(mal_id, ep_num):
-    log(f"    Searching anikoto for MAL {mal_id}...")
-    mal_r = sess.get(f"https://api.jikan.moe/v4/anime/{mal_id}", timeout=10)
-    if mal_r.status_code != 200:
-        raise ValueError(f"Jikan API {mal_r.status_code}")
-    mal_data   = mal_r.json().get("data",{})
-    search_q   = mal_data.get("title_english") or mal_data.get("title","")
-    log(f"    Title: {search_q!r}")
-    results = _search_filter_page(search_q) or _search_ajax(search_q)
-    for anime in results[:6]:
-        try:
-            info = get_watch_page_info(anime["url"])
-            if info["mal_id"] != mal_id: continue
-            log(f"    Matched: {anime['title']!r}  anikoto_id={info['anikoto_id']}")
-            ep = next((e for e in info["episodes"] if e["num"] == ep_num), None)
-            if ep is None:
-                ep = {"num": ep_num, "slug": f"ep-{ep_num}", "mal": mal_id,
-                      "timestamp": info["timestamp"], "ep_id": None, "vrf": ""}
-            anime_slug = anime["url"].rstrip("/").split("/watch/")[-1].split("/")[0]
-            su = get_megaplay_vidwish_urls(
-                anikoto_id=info["anikoto_id"], ep_slug=ep["slug"],
-                ep_num=ep_num, anime_slug=anime_slug,
-                ep_vrf=ep.get("vrf",""), ep_id=ep.get("ep_id",""))
-            return su["realid"], su
-        except Exception as e:
-            log(f"    [skip] {anime.get('title','?')}: {e}")
+    """
+    Find realid by searching anikoto for the anime matching this MAL ID.
+    Strategy: use the episode list data-mal attribute to match.
+    Skips Jikan API — searches anikoto directly.
+    """
+    log(f"    Looking up MAL {mal_id} on anikoto...")
+
+    # Try common search terms based on MAL ID ranges
+    # First try: search anikoto using the MAL ID as keyword (some sites support this)
+    # Better: use the mapper timestamp we already have — the mapper knows the anime
+    # The mapper URL is /api/mal/{mal_id}/{ep}/{ts} — we can get the anikoto slug
+    # by searching anikoto's filter page with broad terms
+
+    # Get anime title from anikoto's own search by trying the episode list
+    # We know the MAL ID — search anikoto filter and check episode list data-mal
+    # Use a broad search with just numbers to find it faster
+
+    # Try direct anikoto API: /anime/getinfo/{id} — but we need anikoto_id
+    # Instead: use /ajax/anime/search with the MAL ID won't work
+    # Best approach: search filter page, check first 10 results' episode lists
+
+    # Get a broad list from anikoto trending/popular that might include this anime
+    # Then check episode list for MAL ID match
+
+    # Search using multiple strategies
+    search_queries = []
+
+    # Strategy 1: use Jikan with short timeout
+    try:
+        mal_r = sess.get(f"https://api.jikan.moe/v4/anime/{mal_id}",
+                         timeout=5)
+        if mal_r.status_code == 200:
+            d = mal_r.json().get("data", {})
+            title_en = d.get("title_english") or ""
+            title_jp = d.get("title") or ""
+            if title_en: search_queries.append(title_en)
+            if title_jp and title_jp != title_en: search_queries.append(title_jp)
+            log(f"    Jikan title: {title_en or title_jp!r}")
+    except Exception:
+        log(f"    Jikan unavailable, trying direct search...")
+
+    # Strategy 2: fallback search terms based on common MAL IDs
+    MAL_TITLES = {
+        20: "Naruto", 1735: "Naruto Shippuden", 21: "One Piece",
+        269: "Bleach", 813: "Dragon Ball Z", 16498: "Attack on Titan",
+        38000: "Demon Slayer", 40748: "Jujutsu Kaisen", 11061: "Hunter x Hunter",
+        5114: "Fullmetal Alchemist Brotherhood", 31964: "My Hero Academia",
+        34572: "Black Clover", 1: "Cowboy Bebop", 6: "Trigun",
+        199: "Bleach", 22319: "Tokyo Ghoul", 9253: "Steins Gate",
+    }
+    if mal_id in MAL_TITLES and MAL_TITLES[mal_id] not in search_queries:
+        search_queries.append(MAL_TITLES[mal_id])
+
+    if not search_queries:
+        search_queries.append(str(mal_id))  # last resort
+
+    # Search anikoto and match by MAL ID in episode list
+    for query in search_queries:
+        log(f"    Searching anikoto: {query!r}")
+        results = _search_filter_page(query) or _search_ajax(query)
+        for anime in results[:8]:
+            try:
+                info = get_watch_page_info(anime["url"])
+                if info["mal_id"] != mal_id:
+                    continue
+                log(f"    Matched: {anime['title']!r}  anikoto_id={info['anikoto_id']}")
+                ep = next((e for e in info["episodes"] if e["num"] == ep_num), None)
+                if ep is None:
+                    ep = {"num": ep_num, "slug": f"ep-{ep_num}", "mal": mal_id,
+                          "timestamp": info["timestamp"], "ep_id": None, "vrf": ""}
+                anime_slug = anime["url"].rstrip("/").split("/watch/")[-1].split("/")[0]
+                su = get_megaplay_vidwish_urls(
+                    anikoto_id=info["anikoto_id"], ep_slug=ep["slug"],
+                    ep_num=ep_num, anime_slug=anime_slug,
+                    ep_vrf=ep.get("vrf", ""), ep_id=ep.get("ep_id", ""))
+                return su["realid"], su
+            except Exception as e:
+                log(f"    [skip] {anime.get('title','?')}: {e}")
+
     raise ValueError(f"Could not match MAL {mal_id} on anikoto")
 
 # ── search mode orchestrator ──────────────────────────────────────────────────
