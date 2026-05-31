@@ -1,11 +1,46 @@
+name: Get Stream URLs
+
+on:
+  workflow_dispatch:
+    inputs:
+      mal_id:
+        description: 'MyAnimeList ID (e.g. 1735)'
+        required: true
+        type: string
+      episode:
+        description: 'Episode number (e.g. 1)'
+        required: true
+        type: string
+
+jobs:
+  get-stream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
       - name: Get stream URLs
         run: |
           python anime_search.py \
             --mal "${{ inputs.mal_id }}" \
             --ep  "${{ inputs.episode }}" \
             --json > result.json
-          EXIT_CODE=$?
           echo "--- result.json ---"
           cat result.json
-          exit $EXIT_CODE
-        continue-on-error: false
+
+      - name: Upload result as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stream-result
+          path: result.json
+          retention-days: 1
