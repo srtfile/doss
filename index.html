@@ -7,446 +7,266 @@
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Segoe UI',sans-serif;background:#0a0a0a;color:#ddd;min-height:100vh;padding:16px}
-    .wrap{max-width:900px;margin:0 auto}
+    .wrap{max-width:860px;margin:0 auto}
     h1{font-size:1.3rem;color:#fff;margin-bottom:4px}
     .sub{font-size:.75rem;color:#444;margin-bottom:20px}
-
-    /* Search card */
-    .card{background:#141414;border:1px solid #222;border-radius:10px;padding:20px;margin-bottom:16px}
-    .token-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:14px}
-    .token-row .field{flex:1}
-    .row{display:flex;gap:10px}
-    .row .field{flex:1}
-    .field{margin-bottom:0}
-    label{display:block;font-size:.7rem;color:#555;margin-bottom:5px;letter-spacing:.3px}
+    .card{background:#141414;border:1px solid #1e1e1e;border-radius:10px;padding:20px;margin-bottom:14px}
+    .row{display:flex;gap:10px;align-items:flex-end}
+    .field{flex:1}
+    label{display:block;font-size:.7rem;color:#555;margin-bottom:5px}
     input{width:100%;padding:9px 12px;background:#0d0d0d;border:1px solid #252525;
           border-radius:7px;color:#fff;font-size:.9rem;outline:none;transition:border-color .15s}
     input:focus{border-color:#444}
     input::placeholder{color:#333}
-    .btn{padding:9px 18px;background:#e50914;color:#fff;border:none;border-radius:7px;
-         font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s,opacity .15s}
+    .btn{padding:9px 20px;background:#e50914;color:#fff;border:none;border-radius:7px;
+         font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap;
+         transition:background .15s,opacity .15s;height:38px}
     .btn:hover:not(:disabled){background:#c40812}
     .btn:disabled{opacity:.35;cursor:not-allowed}
-    .btn.sm{padding:5px 12px;font-size:.72rem;background:#1e1e1e;color:#aaa;border:1px solid #2a2a2a}
-    .btn.sm:hover:not(:disabled){background:#252525}
-
-    /* Status */
-    #status{font-size:.78rem;color:#555;margin-top:12px;min-height:16px;display:flex;align-items:center;gap:7px}
+    #status{font-size:.78rem;color:#555;margin-top:10px;min-height:16px;
+            display:flex;align-items:center;gap:7px}
     #status.err{color:#e55}
     #status.ok{color:#5c5}
-    .bar{height:2px;background:#1a1a1a;border-radius:2px;margin-top:10px;overflow:hidden;display:none}
-    .bar.on{display:block}
-    .fill{height:100%;background:#e50914;border-radius:2px;transition:width .4s ease}
     .spin{display:inline-block;width:12px;height:12px;border:2px solid #2a2a2a;
           border-top-color:#888;border-radius:50%;animation:sp .6s linear infinite;flex-shrink:0}
     @keyframes sp{to{transform:rotate(360deg)}}
+    .bar{height:2px;background:#1a1a1a;border-radius:2px;margin-top:8px;overflow:hidden;display:none}
+    .bar.on{display:block}
+    .fill{height:100%;background:#e50914;border-radius:2px;transition:width .3s ease}
 
-    /* Player area */
-    #player-area{display:none}
-    .anime-title{font-size:1rem;color:#fff;font-weight:600;margin-bottom:14px}
-    .anime-title span{color:#888;font-weight:400;font-size:.85rem;margin-left:8px}
+    /* Results */
+    #results{display:none}
+    .anime-hdr{font-size:1rem;color:#fff;font-weight:600;margin-bottom:14px}
+    .anime-hdr span{color:#666;font-weight:400;font-size:.82rem;margin-left:8px}
+    .realid-badge{display:inline-flex;align-items:center;gap:6px;background:#111;
+                  border:1px solid #222;border-radius:5px;padding:3px 10px;
+                  font-size:.75rem;color:#666;margin-bottom:14px}
+    .realid-badge b{color:#ccc}
 
     /* Server tabs */
-    .server-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-    .stab{padding:6px 14px;background:#1a1a1a;border:1px solid #252525;border-radius:6px;
-          font-size:.75rem;color:#888;cursor:pointer;transition:all .15s;user-select:none}
-    .stab:hover{background:#222;color:#ccc}
-    .stab.active{background:#e50914;border-color:#e50914;color:#fff;font-weight:600}
-    .stab.disabled{opacity:.3;cursor:not-allowed}
+    .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+    .tab{padding:6px 14px;background:#1a1a1a;border:1px solid #222;border-radius:6px;
+         font-size:.75rem;color:#777;cursor:pointer;transition:all .15s;user-select:none}
+    .tab:hover{background:#1e1e1e;color:#bbb}
+    .tab.active{background:#e50914;border-color:#e50914;color:#fff;font-weight:600}
 
-    /* iframe player */
+    /* Player */
     .player-wrap{position:relative;width:100%;padding-top:56.25%;background:#000;
-                 border-radius:8px;overflow:hidden;margin-bottom:14px}
+                 border-radius:8px;overflow:hidden;margin-bottom:14px;border:1px solid #1a1a1a}
     .player-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
-    .player-placeholder{position:absolute;top:0;left:0;width:100%;height:100%;
-                        display:flex;align-items:center;justify-content:center;
-                        flex-direction:column;gap:10px;color:#444;font-size:.85rem}
-    .player-placeholder svg{width:48px;height:48px;opacity:.3}
+    .player-ph{position:absolute;top:0;left:0;width:100%;height:100%;
+               display:flex;align-items:center;justify-content:center;
+               flex-direction:column;gap:8px;color:#333;font-size:.82rem}
 
     /* Downloads */
-    .dl-section{margin-top:4px}
-    .dl-title{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:#444;margin-bottom:8px}
-    .dl-links{display:flex;flex-wrap:wrap;gap:6px}
-    .dl-link{padding:5px 12px;background:#141414;border:1px solid #222;border-radius:6px;
+    .dl-title{font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:#444;margin-bottom:7px}
+    .dl-links{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+    .dl-link{padding:5px 12px;background:#111;border:1px solid #1e1e1e;border-radius:6px;
              font-size:.72rem;color:#4af;text-decoration:none;transition:background .15s}
-    .dl-link:hover{background:#1a1a1a}
+    .dl-link:hover{background:#161616}
 
-    /* URL list */
-    .url-section{margin-top:14px}
+    /* URL rows */
     .url-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-    .url-lbl{font-size:.7rem;color:#555;width:100px;flex-shrink:0}
-    .url-val{flex:1;font-size:.72rem;color:#4af;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .copy-btn{padding:2px 8px;font-size:.65rem;background:#1a1a1a;color:#888;
-              border:1px solid #252525;border-radius:4px;cursor:pointer;flex-shrink:0}
-    .copy-btn:hover{background:#222}
-    .realid{display:inline-block;background:#1a1a1a;border:1px solid #252525;
-            border-radius:5px;padding:3px 10px;font-size:.72rem;color:#666;margin-bottom:12px}
-    .realid b{color:#aaa}
-    .divider{border:none;border-top:1px solid #1a1a1a;margin:14px 0}
+    .url-lbl{font-size:.68rem;color:#555;width:90px;flex-shrink:0}
+    .url-val{flex:1;font-size:.7rem;color:#4af;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .cp{padding:2px 8px;font-size:.62rem;background:#1a1a1a;color:#777;
+        border:1px solid #222;border-radius:4px;cursor:pointer;flex-shrink:0}
+    .cp:hover{background:#1e1e1e}
+    .divider{border:none;border-top:1px solid #1a1a1a;margin:12px 0}
   </style>
 </head>
 <body>
 <div class="wrap">
   <h1>🎌 Anime Stream Finder</h1>
-  <p class="sub">Megaplay · Vidwish · Kiwi streams via MAL ID — GitHub Actions backend</p>
+  <p class="sub">Kiwi SUB · DUB streams via MAL ID</p>
 
   <div class="card">
-    <div class="token-row">
-      <div class="field">
-        <label>GitHub Token (Actions: Read &amp; Write) — <a href="https://github.com/settings/tokens?type=beta" target="_blank" style="color:#4af;text-decoration:none">Create →</a></label>
-        <input type="password" id="gh-token" placeholder="github_pat_xxxx" autocomplete="off"/>
-      </div>
-    </div>
     <div class="row">
       <div class="field">
         <label>MAL ID</label>
-        <input type="number" id="mal-id" placeholder="e.g. 1735" min="1"/>
+        <input type="number" id="mal" placeholder="e.g. 1735" min="1"/>
       </div>
       <div class="field">
         <label>Episode</label>
-        <input type="number" id="episode" placeholder="e.g. 1" min="1"/>
+        <input type="number" id="ep" placeholder="e.g. 1" min="1"/>
       </div>
-      <div class="field" style="display:flex;align-items:flex-end">
-        <button class="btn" id="go-btn" onclick="getStreams()" style="width:100%">▶ Get Streams</button>
-      </div>
+      <button class="btn" id="go" onclick="getStreams()">▶ Get</button>
     </div>
     <div class="bar" id="bar"><div class="fill" id="fill" style="width:0%"></div></div>
     <div id="status"></div>
   </div>
 
-  <!-- Player + results -->
-  <div id="player-area">
+  <div id="results">
     <div class="card">
-      <div class="anime-title" id="anime-title">Loading...</div>
+      <div class="anime-hdr" id="anime-hdr">—</div>
 
-      <!-- Server tabs -->
-      <div class="server-tabs" id="server-tabs"></div>
+      <!-- Tabs -->
+      <div class="tabs" id="tabs"></div>
 
       <!-- Player -->
-      <div class="player-wrap" id="player-wrap">
-        <div class="player-placeholder" id="player-placeholder">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          Select a server above
+      <div class="player-wrap">
+        <div class="player-ph" id="ph">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="#333"><path d="M8 5v14l11-7z"/></svg>
+          Select a server
         </div>
-        <iframe id="player-frame" allowfullscreen allow="autoplay; fullscreen" style="display:none"></iframe>
+        <iframe id="frame" allowfullscreen allow="autoplay; fullscreen" style="display:none"></iframe>
       </div>
 
       <!-- Downloads -->
-      <div class="dl-section" id="dl-section" style="display:none">
+      <div id="dl-wrap" style="display:none">
         <div class="dl-title">Downloads</div>
         <div class="dl-links" id="dl-links"></div>
       </div>
 
       <hr class="divider">
 
-      <!-- All URLs -->
-      <div class="url-section" id="url-section"></div>
+      <!-- URL list -->
+      <div id="url-list"></div>
     </div>
   </div>
 </div>
 
 <script>
-  const OWNER = 'srtfile';
-  const REPO  = 'doss';
-
   const $ = id => document.getElementById(id);
-  let fillTimer = null;
+  let servers = [];
 
-  // Restore token
-  window.addEventListener('load', () => {
-    const t = sessionStorage.getItem('gh_token');
-    if (t) $('gh-token').value = t;
-  });
-  $('gh-token').addEventListener('input', e => sessionStorage.setItem('gh_token', e.target.value.trim()));
-  ['mal-id','episode'].forEach(id => $(id).addEventListener('keydown', e => { if(e.key==='Enter') getStreams(); }));
+  ['mal','ep'].forEach(id => $(id).addEventListener('keydown', e => { if(e.key==='Enter') getStreams(); }));
 
-  // ── State ──────────────────────────────────────────────────────────────────
-  let streamData = null;
-
-  // ── UI helpers ─────────────────────────────────────────────────────────────
   function setStatus(msg, type='') { const el=$('status'); el.className=type; el.innerHTML=msg; }
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-  function setLoading(on) {
-    $('go-btn').disabled = on;
-    $('go-btn').textContent = on ? '⏳ Fetching...' : '▶ Get Streams';
-    const bar = $('bar');
-    if (on) {
-      bar.classList.add('on');
-      animateFill(0, 25, 5000);   // 0→25% while waiting for run
-    } else {
-      clearTimeout(fillTimer);
-      $('fill').style.width = '100%';
-      setTimeout(() => { bar.classList.remove('on'); $('fill').style.width='0%'; }, 500);
-    }
-  }
-
-  function animateFill(from, to, ms) {
+  let fillTimer = null;
+  function startFill(to, ms) {
     clearTimeout(fillTimer);
-    const steps = 30, stepMs = ms/steps, stepPct = (to-from)/steps;
-    let cur = from;
-    function tick() {
-      cur += stepPct;
-      $('fill').style.width = Math.min(cur, 95) + '%';
-      if (cur < to) fillTimer = setTimeout(tick, stepMs);
-    }
+    const fill=$('fill'), steps=30, stepMs=ms/steps, stepPct=to/steps;
+    let cur=0;
+    function tick(){ cur+=stepPct; fill.style.width=Math.min(cur,95)+'%'; if(cur<to) fillTimer=setTimeout(tick,stepMs); }
     tick();
   }
-  function setFill(pct) { clearTimeout(fillTimer); $('fill').style.width = pct+'%'; }
+  function endFill() {
+    clearTimeout(fillTimer);
+    $('fill').style.width='100%';
+    setTimeout(()=>{ $('bar').classList.remove('on'); $('fill').style.width='0%'; }, 400);
+  }
 
-  // ── Main fetch ─────────────────────────────────────────────────────────────
   async function getStreams() {
-    const token   = ($('gh-token').value || sessionStorage.getItem('gh_token') || '').trim();
-    const malId   = $('mal-id').value.trim();
-    const episode = $('episode').value.trim();
-    if (!token)   return setStatus('⚠ Enter your GitHub token.', 'err');
-    if (!malId)   return setStatus('⚠ Enter a MAL ID.', 'err');
-    if (!episode) return setStatus('⚠ Enter an episode number.', 'err');
-    sessionStorage.setItem('gh_token', token);
+    const mal = $('mal').value.trim();
+    const ep  = $('ep').value.trim();
+    if (!mal) return setStatus('⚠ Enter MAL ID', 'err');
+    if (!ep)  return setStatus('⚠ Enter episode', 'err');
 
-    setLoading(true);
-    $('player-area').style.display = 'none';
-
-    const hdrs = {
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-    };
+    $('go').disabled = true;
+    $('go').textContent = '⏳';
+    $('results').style.display = 'none';
+    $('bar').classList.add('on');
+    startFill(90, 8000);
+    setStatus('<span class="spin"></span> Fetching streams...');
 
     try {
-      // 1. Trigger
-      setStatus('<span class="spin"></span> Triggering workflow...');
-      const t0 = Date.now();
-      const tr = await fetch(
-        `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/get_stream.yml/dispatches`,
-        { method:'POST', headers:{...hdrs,'Content-Type':'application/json'},
-          body: JSON.stringify({ ref:'main', inputs:{ mal_id:malId, episode:episode } }) }
-      );
-      if (!tr.ok) {
-        const e = await tr.json().catch(()=>({}));
-        throw new Error(`Trigger failed (${tr.status}): ${e.message||'check token & repo'}`);
-      }
-
-      // 2. Poll for run — start after 3s, check every 2s (fast!)
-      setStatus('<span class="spin"></span> Waiting for run...');
-      await sleep(3000);
-      const runId = await pollForRun(hdrs, t0);
-      setFill(40);
-      animateFill(40, 85, 20000);  // expect ~15s total
-      setStatus(`<span class="spin"></span> Run #${runId} — usually done in ~15s...`);
-
-      // 3. Wait for completion — poll every 2s
-      await waitForCompletion(hdrs, runId);
-      setFill(92);
-      setStatus('<span class="spin"></span> Downloading result...');
-
-      // 4. Get artifact
-      const result = await downloadArtifact(hdrs, runId);
-      streamData = result;
-      renderAll(result, malId, episode);
-      setLoading(false);
-      setStatus(`✓ Done in ${((Date.now()-t0)/1000).toFixed(1)}s`, 'ok');
-
-    } catch(err) {
-      setLoading(false);
-      setStatus(`✗ ${err.message}`, 'err');
-      console.error(err);
-    }
-  }
-
-  async function pollForRun(hdrs, t0) {
-    // Poll every 2s for up to 40s
-    // Just grab the most recent workflow_dispatch run — no timestamp filtering
-    let lastRunId = null;
-
-    // First, get any existing runs before we triggered (to skip them)
-    try {
-      const pre = await fetch(
-        `https://api.github.com/repos/${OWNER}/${REPO}/actions/runs?per_page=3&event=workflow_dispatch`,
-        { headers: hdrs }
-      );
-      const preData = await pre.json();
-      if (preData.workflow_runs?.length) {
-        lastRunId = preData.workflow_runs[0].id;
-      }
-    } catch(e) {}
-
-    for (let i = 0; i < 20; i++) {
-      await sleep(2000);
-      const res  = await fetch(
-        `https://api.github.com/repos/${OWNER}/${REPO}/actions/runs?per_page=3&event=workflow_dispatch`,
-        { headers: hdrs }
-      );
+      const t0  = Date.now();
+      const res = await fetch(`/api/stream?mal=${mal}&ep=${ep}`);
       const data = await res.json();
-      const run  = data.workflow_runs?.[0];
-      // Accept any run that is newer than what existed before we triggered
-      if (run && run.id !== lastRunId) return run.id;
-      // Also accept if it's the same run but now in_progress (just started)
-      if (run && run.status === 'in_progress') return run.id;
+
+      if (data.error) throw new Error(data.error);
+
+      endFill();
+      renderResults(data, mal, ep);
+      setStatus(`✓ Done in ${((Date.now()-t0)/1000).toFixed(1)}s`, 'ok');
+    } catch(err) {
+      endFill();
+      setStatus(`✗ ${err.message}`, 'err');
+    } finally {
+      $('go').disabled = false;
+      $('go').textContent = '▶ Get';
     }
-    throw new Error('Timed out waiting for run to appear (40s). Check Actions tab.');
   }
 
-  async function waitForCompletion(hdrs, runId) {
-    // Poll every 2s for up to 3 min
-    for (let i = 0; i < 90; i++) {
-      await sleep(2000);
-      const res = await fetch(
-        `https://api.github.com/repos/${OWNER}/${REPO}/actions/runs/${runId}`,
-        { headers: hdrs }
-      );
-      const run = await res.json();
-      if (run.status === 'completed') {
-        if (run.conclusion !== 'success')
-          throw new Error(`Workflow ${run.conclusion}. Check Actions tab for error details.`);
-        return;
-      }
+  function renderResults(data, mal, ep) {
+    const kiwi = data.kiwi      || {};
+    const dl   = data.downloads || {};
+
+    $('anime-hdr').innerHTML = `MAL ${esc(mal)} <span>Episode ${esc(ep)}</span>`;
+
+    // realid badge
+    let hdrExtra = '';
+    if (data.realid) {
+      hdrExtra = `<div class="realid-badge" style="margin-bottom:12px">realid = <b>${esc(data.realid)}</b></div>`;
     }
-    throw new Error('Workflow timed out after 3 minutes.');
-  }
-
-  async function downloadArtifact(hdrs, runId) {
-    const res  = await fetch(
-      `https://api.github.com/repos/${OWNER}/${REPO}/actions/runs/${runId}/artifacts`,
-      { headers: hdrs }
-    );
-    const data = await res.json();
-    const art  = data.artifacts?.find(a => a.name === 'stream-result');
-    if (!art) throw new Error('Result artifact not found.');
-    const dlRes = await fetch(
-      `https://api.github.com/repos/${OWNER}/${REPO}/actions/artifacts/${art.id}/zip`,
-      { headers: hdrs }
-    );
-    if (!dlRes.ok) throw new Error(`Artifact download failed (${dlRes.status}).`);
-    const blob = await dlRes.blob();
-    const zip  = await JSZip.loadAsync(blob);
-    const file = zip.file('result.json');
-    if (!file) throw new Error('result.json not in artifact zip.');
-    return JSON.parse(await file.async('string'));
-  }
-
-  // ── Render ─────────────────────────────────────────────────────────────────
-  function renderAll(data, malId, episode) {
-    const su = data.stream_urls    || {};
-    const ms = data.mewcdn_streams || {};
-    const dl = data.downloads      || {};
-    const title = (data.anime && !data.anime.startsWith('MAL:')) ? data.anime : `MAL ${malId}`;
-
-    $('anime-title').innerHTML = `${esc(title)} <span>Episode ${esc(episode)}</span>`;
 
     // Build server list
-    const servers = [];
-
-    if (su.realid) {
-      if (su.megaplay_sub) servers.push({ label:'Megaplay SUB', url: su.megaplay_sub, type:'embed' });
-      if (su.megaplay_dub) servers.push({ label:'Megaplay DUB', url: su.megaplay_dub, type:'embed' });
-      if (su.vidwish_sub)  servers.push({ label:'Vidwish SUB',  url: su.vidwish_sub,  type:'embed' });
-      if (su.vidwish_dub)  servers.push({ label:'Vidwish DUB',  url: su.vidwish_dub,  type:'embed' });
-    }
-
-    // Kiwi (mewcdn m3u8 streams)
-    for (const [stype, s] of Object.entries(ms)) {
-      if (s.m3u8_direct) {
-        servers.push({ label:`Kiwi ${stype.toUpperCase()}`, url: s.m3u8_direct, type:'m3u8',
-                       player: s.mewcdn_url });
+    servers = [];
+    for (const [stype, s] of Object.entries(kiwi)) {
+      if (s.error) continue;
+      if (s.player_url) {
+        servers.push({ label: `Kiwi ${stype.toUpperCase()}`, url: s.player_url, m3u8: s.m3u8 });
       }
     }
 
-    // Render tabs
-    const tabsEl = $('server-tabs');
+    // Tabs
+    const tabsEl = $('tabs');
     tabsEl.innerHTML = '';
     servers.forEach((srv, i) => {
-      const tab = document.createElement('div');
-      tab.className = 'stab' + (i===0?' active':'');
-      tab.textContent = srv.label;
-      tab.onclick = () => selectServer(i, servers);
-      tabsEl.appendChild(tab);
+      const t = document.createElement('div');
+      t.className = 'tab' + (i===0?' active':'');
+      t.textContent = srv.label;
+      t.onclick = () => selectServer(i);
+      tabsEl.appendChild(t);
     });
 
     // Downloads
     const dlKeys = Object.keys(dl);
     if (dlKeys.length) {
-      $('dl-section').style.display = 'block';
+      $('dl-wrap').style.display = 'block';
       $('dl-links').innerHTML = dlKeys.map(q =>
         `<a class="dl-link" href="${esc(dl[q])}" target="_blank" rel="noopener">${esc(q)}</a>`
       ).join('');
+    } else {
+      $('dl-wrap').style.display = 'none';
     }
 
     // URL list
-    let urlHtml = '';
-    if (su.realid) {
-      urlHtml += `<div class="realid">realid = <b>${esc(su.realid)}</b></div>`;
-      [['Megaplay SUB',su.megaplay_sub],['Megaplay DUB',su.megaplay_dub],
-       ['Vidwish SUB',su.vidwish_sub],  ['Vidwish DUB',su.vidwish_dub]]
-        .forEach(([l,u]) => { if(u) urlHtml += urlRow(l,u); });
+    let urlHtml = hdrExtra;
+    for (const [stype, s] of Object.entries(kiwi)) {
+      if (s.error) {
+        urlHtml += `<div class="url-row"><span class="url-lbl">Kiwi ${stype.toUpperCase()}</span><span style="font-size:.7rem;color:#e55">${esc(s.error)}</span></div>`;
+        continue;
+      }
+      if (s.m3u8)       urlHtml += urlRow(`Kiwi ${stype.toUpperCase()} m3u8`,   s.m3u8);
+      if (s.player_url) urlHtml += urlRow(`Kiwi ${stype.toUpperCase()} player`, s.player_url);
+      const intro = (s.skip_data||{}).intro||[0,0];
+      const outro = (s.skip_data||{}).outro||[0,0];
+      if (intro[1]>0) urlHtml += `<div class="url-row"><span class="url-lbl" style="color:#444">Skip intro</span><span style="font-size:.7rem;color:#555">${intro[0]}s → ${intro[1]}s</span></div>`;
+      if (outro[1]>0) urlHtml += `<div class="url-row"><span class="url-lbl" style="color:#444">Skip outro</span><span style="font-size:.7rem;color:#555">${outro[0]}s → ${outro[1]}s</span></div>`;
     }
-    for (const [stype, s] of Object.entries(ms)) {
-      if (s.m3u8_direct) urlHtml += urlRow(`Kiwi ${stype.toUpperCase()} m3u8`, s.m3u8_direct);
-      if (s.mewcdn_url)  urlHtml += urlRow(`Kiwi ${stype.toUpperCase()} player`, s.mewcdn_url);
-    }
-    $('url-section').innerHTML = urlHtml;
+    $('url-list').innerHTML = urlHtml;
 
-    // Show player area and auto-select first server
-    $('player-area').style.display = 'block';
-    if (servers.length > 0) selectServer(0, servers);
-    else {
-      $('player-placeholder').style.display = 'flex';
-      $('player-frame').style.display = 'none';
-    }
-
-    // Scroll to player
-    $('player-area').scrollIntoView({ behavior:'smooth', block:'start' });
+    $('results').style.display = 'block';
+    if (servers.length > 0) selectServer(0);
+    $('results').scrollIntoView({ behavior:'smooth', block:'start' });
   }
 
-  function selectServer(idx, servers) {
-    // Update tabs
-    document.querySelectorAll('.stab').forEach((t,i) => t.classList.toggle('active', i===idx));
-
+  function selectServer(idx) {
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===idx));
     const srv = servers[idx];
-    const frame = $('player-frame');
-    const placeholder = $('player-placeholder');
-
-    if (srv.type === 'embed') {
-      // Direct embed URL (megaplay/vidwish)
-      frame.src = srv.url;
-      frame.style.display = 'block';
-      placeholder.style.display = 'none';
-    } else if (srv.type === 'm3u8') {
-      // For m3u8, use the mewcdn player URL if available, else show link
-      if (srv.player) {
-        frame.src = srv.player;
-        frame.style.display = 'block';
-        placeholder.style.display = 'none';
-      } else {
-        frame.style.display = 'none';
-        placeholder.style.display = 'flex';
-        placeholder.innerHTML = `
-          <svg viewBox="0 0 24 24" fill="currentColor" style="width:40px;opacity:.3"><path d="M8 5v14l11-7z"/></svg>
-          <span style="font-size:.8rem">m3u8 stream — open in player:</span>
-          <a href="${esc(srv.url)}" target="_blank" class="btn sm" style="margin-top:4px">Open m3u8 ↗</a>`;
-      }
-    }
+    if (!srv) return;
+    $('frame').src = srv.url;
+    $('frame').style.display = 'block';
+    $('ph').style.display = 'none';
   }
 
   function urlRow(label, url) {
-    const id = 'u'+Math.random().toString(36).slice(2,8);
+    const safe = esc(url);
     return `<div class="url-row">
       <span class="url-lbl">${esc(label)}</span>
-      <span class="url-val" title="${esc(url)}">${esc(url)}</span>
-      <button class="copy-btn" onclick="cp('${id}','${esc(url)}')">Copy</button>
+      <span class="url-val" title="${safe}">${safe}</span>
+      <button class="cp" onclick="cp(this,'${safe}')">Copy</button>
     </div>`;
   }
 
-  function cp(id, url) {
+  function cp(btn, url) {
     navigator.clipboard.writeText(url).then(() => {
-      const btns = document.querySelectorAll('.copy-btn');
-      // find by onclick attr
-      document.querySelectorAll('.copy-btn').forEach(b => {
-        if (b.getAttribute('onclick').includes(id)) {
-          b.textContent = '✓';
-          setTimeout(() => b.textContent = 'Copy', 1500);
-        }
-      });
+      btn.textContent = '✓';
+      setTimeout(() => btn.textContent = 'Copy', 1500);
     });
   }
 
@@ -454,8 +274,5 @@
     return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
-        integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </body>
 </html>
