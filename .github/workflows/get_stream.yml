@@ -34,7 +34,7 @@ jobs:
           python anime_search.py \
             --mal "${{ inputs.mal_id }}" \
             --ep  "${{ inputs.episode }}" \
-            --json > result.json
+            --json 2>/dev/null > result.json
           echo "--- result.json ---"
           cat result.json
 
