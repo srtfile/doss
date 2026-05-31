@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anime Stream Finder</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0d0d0d;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 32px;
+      width: 100%;
+      max-width: 640px;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 6px; color: #fff; }
+    .subtitle { font-size: 0.8rem; color: #555; margin-bottom: 28px; }
+    .field { margin-bottom: 16px; }
+    label { display: block; font-size: 0.78rem; color: #777; margin-bottom: 6px; letter-spacing: 0.3px; }
+    input {
+      width: 100%;
+      padding: 10px 14px;
+      background: #111;
+      border: 1px solid #2e2e2e;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: #555; }
+    input::placeholder { color: #444; }
+    .row { display: flex; gap: 12px; }
+    .row .field { flex: 1; }
+    button.primary {
+      width: 100%;
+      padding: 12px;
+      background: #e50914;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    button.primary:hover:not(:disabled) { background: #c40812; }
+    button.primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    #status {
+      margin-top: 18px;
+      font-size: 0.82rem;
+      color: #666;
+      min-height: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #status.error { color: #e55; }
+    #status.ok    { color: #5c5; }
+    #results { margin-top: 28px; display: none; }
+    .section-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: #555;
+      margin-bottom: 10px;
+      margin-top: 4px;
+    }
+    .url-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px;
+    }
+    .url-label {
+      font-size: 0.72rem;
+      color: #666;
+      width: 108px;
+      flex-shrink: 0;
+    }
+    .url-link {
+      flex: 1;
+      font-size: 0.78rem;
+      color: #4af;
+      text-decoration: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .url-link:hover { text-decoration: underline; }
+    .copy-btn {
+      padding: 3px 9px;
+      font-size: 0.7rem;
+      background: #222;
+      color: #aaa;
+      border: 1px solid #333;
+      border-radius: 5px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .copy-btn:hover { background: #2e2e2e; }
+    .divider { border: none; border-top: 1px solid #1e1e1e; margin: 14px 0; }
+    .realid-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #161616;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 0.78rem;
+      color: #888;
+      margin-bottom: 14px;
+    }
+    .realid-badge span { color: #fff; font-weight: 600; }
+    .spinner {
+      display: inline-block;
+      width: 13px; height: 13px;
+      border: 2px solid #333;
+      border-top-color: #999;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .token-box {
+      margin-bottom: 22px;
+      padding: 14px;
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+    }
+    .token-box label { color: #555; font-size: 0.72rem; margin-bottom: 8px; }
+    .token-box input { background: #0c0c0c; border-color: #1e1e1e; font-size: 0.82rem; }
+    .token-hint {
+      font-size: 0.7rem;
+      color: #444;
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+    .token-hint a { color: #4af; text-decoration: none; }
+    .token-hint a:hover { text-decoration: underline; }
+    .progress-bar {
+      height: 2px;
+      background: #1e1e1e;
+      border-radius: 2px;
+      margin-top: 14px;
+      overflow: hidden;
+      display: none;
+    }
+    .progress-bar.active { display: block; }
+    .progress-fill {
+      height: 100%;
+      background: #e50914;
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+    .anime-info {
+      font-size: 0.78rem;
+      color: #666;
+      margin-bottom: 14px;
+    }
+    .anime-info strong { color: #aaa; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>🎌 Anime Stream Finder</h1>
+  <p class="subtitle">Get Megaplay &amp; Vidwish stream URLs via MAL ID</p>
+
+  <!-- GitHub token -->
+  <div class="token-box">
+    <label>GitHub Personal Access Token</label>
+    <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+    <p class="token-hint">
+      Needs <code>Actions: Read &amp; Write</code> on your repo.
+      <a href="https://github.com/settings/tokens" target="_blank">Create token →</a>
+      &nbsp;|&nbsp; Stored in sessionStorage only.
+    </p>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label>MAL ID</label>
+      <input type="number" id="mal-id" placeholder="e.g. 1735" min="1" />
+    </div>
+    <div class="field">
+      <label>Episode</label>
+      <input type="number" id="episode" placeholder="e.g. 1" min="1" />
+    </div>
+  </div>
+
+  <button class="primary" id="search-btn" onclick="getStreams()">Get Stream URLs</button>
+
+  <div class="progress-bar" id="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+
+  <div id="status"></div>
+  <div id="results"></div>
+</div>
+
+<script>
+  // ── CONFIG — change these two lines ──────────────────────────────
+  const OWNER = 'multimoi';
+  const REPO  = 'doss';
+  // ─────────────────────────────────────────────────────────────────
+
+  const $  = id => document.getElementById(id);
+  let   progressTimer = null;
+
+  // Restore saved token
+  window.addEventListener('load', () => {
+    const t = sessionStorage.getItem('gh_token');
+    if (t) $('gh-token').value = t;
+  });
+  $('gh-token').addEventListener('input', e => {
+    sessionStorage.setItem('gh_token', e.target.value.trim());
+  });
+
+  // Enter key submits
+  ['mal-id', 'episode'].forEach(id => {
+    $(id).addEventListener('keydown', e => { if (e.key === 'Enter') getStreams(); });
+  });
+
+  function setStatus(msg, type = '') {
+    const el = $('status');
+    el.className = type;
+    el.innerHTML = msg;
+  }
+
+  function setLoading(on) {
+    $('search-btn').disabled = on;
+    $('search-btn').textContent = on ? 'Fetching...' : 'Get Stream URLs';
+    const pb = $('progress-bar');
+    if (on) {
+      pb.classList.add('active');
+      animateProgress(0, 30, 8000);   // 0→30% over 8s (trigger + queue)
+    } else {
+      clearTimeout(progressTimer);
+      $('progress-fill').style.width = '100%';
+      setTimeout(() => {
+        pb.classList.remove('active');
+        $('progress-fill').style.width = '0%';
+      }, 600);
+    }
+  }
+
+  function animateProgress(from, to, duration) {
+    const fill = $('progress-fill');
+    const steps = 20;
+    const stepMs = duration / steps;
+    const stepPct = (to - from) / steps;
+    let current = from;
+    function tick() {
+      current += stepPct;
+      fill.style.width = Math.min(current, 95) + '%';
+      if (current < to) progressTimer = setTimeout(tick, stepMs);
+    }
+    tick();
+  }
+
+  function setProgress(pct) {
+    clearTimeout(progressTimer);
+    $('progress-fill').style.width = pct + '%';
+  }
+
+  async function getStreams() {
+    const token   = ($('gh-token').value || sessionStorage.getItem('gh_token') || '').trim();
+    const malId   = $('mal-id').value.trim();
+    const episode = $('episode').value.trim();
+
+    if (!token)   return setStatus('⚠ Enter your GitHub token.', 'error');
+    if (!malId)   return setStatus('⚠ Enter a MAL ID.', 'error');
+    if (!episode) return setStatus('⚠ Enter an episode number.', 'error');
+
+    sessionStorage.setItem('gh_token', token);
+    setLoading(true);
+    $('results').style.display = 'none';
+
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    };
+
+    try {
+      // Step 1 — trigger workflow
+      setStatus('<span class="spinner"></span> Triggering GitHub Actions workflow...');
+      const triggerRes = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/get_stream.yml/dispatches`,
+        {
+          method: 'POST',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ref: 'main',
+            inputs: { mal_id: malId, episode: episode }
+          })
+        }
+      );
+      if (!triggerRes.ok) {
+        const err = await triggerRes.json().catch(() => ({}));
+        throw new Error(`Trigger failed (${triggerRes.status}): ${err.message || 'check token & repo config'}`);
+      }
+
+      // Step 2 — wait for run to appear
+      setStatus('<span class="spinner"></span> Waiting for run to start...');
+      await sleep(4000);
+      const runId = await pollForRun(headers);
+      setProgress(35);
+      setStatus(`<span class="spinner"></span> Run #${runId} in progress — this takes ~30–60s...`);
+      animateProgress(35, 85, 50000);
+
+      // Step 3 — wait for completion
+      await waitForCompletion(headers, runId);
+      setProgress(90);
+      setStatus('<span class="spinner"></span> Downloading result...');
+
+      // Step 4 — download artifact
+      const result = await downloadArtifact(headers, runId);
+      renderResults(result, malId, episode);
+      setLoading(false);
+      setStatus('✓ Done.', 'ok');
+
+    } catch (err) {
+      setLoading(false);
+      setStatus(`✗ ${err.message}`, 'error');
+      console.error(err);
+    }
+  }
+
+  async function pollForRun(headers) {
+    for (let i = 0; i < 20; i++) {
+      await sleep(2000);
+      const res  = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/actions/runs?per_page=5&event=workflow_dispatch`,
+        { headers }
+      );
+      const data = await res.json();
+      const run  = data.workflow_runs?.[0];
+      if (run) return run.id;
+    }
+    throw new Error('Timed out waiting for workflow run to appear (40s).');
+  }
+
+  async function waitForCompletion(headers, runId) {
+    for (let i = 0; i < 40; i++) {   // up to ~3.5 min
+      await sleep(5000);
+      const res = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/actions/runs/${runId}`,
+        { headers }
+      );
+      const run = await res.json();
+      if (run.status === 'completed') {
+        if (run.conclusion !== 'success')
+          throw new Error(`Workflow ended with: ${run.conclusion}. Check the Actions tab.`);
+        return;
+      }
+    }
+    throw new Error('Workflow timed out after 3.5 minutes.');
+  }
+
+  async function downloadArtifact(headers, runId) {
+    const res  = await fetch(
+      `https://api.github.com/repos/${OWNER}/${REPO}/actions/runs/${runId}/artifacts`,
+      { headers }
+    );
+    const data = await res.json();
+    const art  = data.artifacts?.find(a => a.name === 'stream-result');
+    if (!art) throw new Error('Result artifact not found in run.');
+
+    const dlRes = await fetch(
+      `https://api.github.com/repos/${OWNER}/${REPO}/actions/artifacts/${art.id}/zip`,
+      { headers }
+    );
+    if (!dlRes.ok) throw new Error(`Artifact download failed (${dlRes.status}).`);
+
+    const blob = await dlRes.blob();
+    const zip  = await JSZip.loadAsync(blob);
+    const file = zip.file('result.json');
+    if (!file) throw new Error('result.json not found inside artifact zip.');
+    return JSON.parse(await file.async('string'));
+  }
+
+  function renderResults(data, malId, episode) {
+    const su = data.stream_urls    || {};
+    const ms = data.mewcdn_streams || {};
+    const dl = data.downloads      || {};
+    const el = $('results');
+    let html = '';
+
+    // Anime info header
+    const title = data.anime && !data.anime.startsWith('MAL:') ? data.anime : `MAL ${malId}`;
+    html += `<div class="anime-info"><strong>${escHtml(title)}</strong> — Episode ${escHtml(episode)}</div>`;
+
+    // Megaplay / Vidwish
+    if (su.realid) {
+      html += `<div class="realid-badge">realid = <span>${escHtml(su.realid)}</span></div>`;
+      html += `<div class="section-title">Megaplay / Vidwish</div>`;
+      [
+        ['Megaplay SUB', su.megaplay_sub],
+        ['Megaplay DUB', su.megaplay_dub],
+        ['Vidwish  SUB', su.vidwish_sub],
+        ['Vidwish  DUB', su.vidwish_dub],
+      ].forEach(([label, url]) => { if (url) html += urlRow(label, url); });
+      html += '<hr class="divider">';
+    } else {
+      html += `<div class="section-title" style="color:#633">Megaplay / Vidwish — not available for this episode</div><hr class="divider">`;
+    }
+
+    // mewcdn streams
+    for (const [stype, s] of Object.entries(ms)) {
+      html += `<div class="section-title">mewcdn ${stype.toUpperCase()} — HLS stream</div>`;
+      if (s.m3u8_direct) html += urlRow('Direct m3u8', s.m3u8_direct);
+      if (s.mewcdn_url)  html += urlRow('Player URL',  s.mewcdn_url);
+      const skip = s.skip_data || {};
+      const intro = skip.intro || [0,0];
+      const outro = skip.outro || [0,0];
+      if (intro[1] > 0) html += `<div class="url-row"><span class="url-label" style="color:#555">Skip intro</span><span style="font-size:0.78rem;color:#666">${intro[0]}s → ${intro[1]}s</span></div>`;
+      if (outro[1] > 0) html += `<div class="url-row"><span class="url-label" style="color:#555">Skip outro</span><span style="font-size:0.78rem;color:#666">${outro[0]}s → ${outro[1]}s</span></div>`;
+      html += '<hr class="divider">';
+    }
+
+    // Downloads
+    if (Object.keys(dl).length) {
+      html += `<div class="section-title">Downloads (AnimePahe)</div>`;
+      for (const [quality, url] of Object.entries(dl)) {
+        html += urlRow(quality, url);
+      }
+    }
+
+    el.innerHTML = html;
+    el.style.display = 'block';
+  }
+
+  function urlRow(label, url) {
+    const id = 'u' + Math.random().toString(36).slice(2, 9);
+    return `
+      <div class="url-row">
+        <span class="url-label">${escHtml(label)}</span>
+        <a class="url-link" id="${id}" href="${escHtml(url)}" target="_blank" rel="noopener" title="${escHtml(url)}">${escHtml(url)}</a>
+        <button class="copy-btn" onclick="copyUrl('${id}')">Copy</button>
+      </div>`;
+  }
+
+  function copyUrl(id) {
+    const el = document.getElementById(id);
+    navigator.clipboard.writeText(el.href).then(() => {
+      el.style.color = '#5c5';
+      setTimeout(() => el.style.color = '', 1500);
+    });
+  }
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+
+<!-- JSZip for unzipping the artifact in-browser -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
+        integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</body>
+</html>
