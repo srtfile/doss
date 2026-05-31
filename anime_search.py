@@ -413,7 +413,7 @@ def run_by_mal(mal_id, ep_num=None, json_out=False):
     result = {"anime": f"MAL:{mal_id}", "mal_id": mal_id, "episode": ep_num,
               "anikoto_id": None, "mewcdn_streams": mewcdn_streams,
               "stream_urls": stream_urls, "downloads": mapper_data.get("downloads",{})}
-    if json_out: log(json.dumps(result, indent=2, ensure_ascii=False))
+    if json_out: print(json.dumps(result, indent=2, ensure_ascii=False))
     else:        _print_result(result, W)
     return result
 
@@ -497,7 +497,7 @@ def run(query, ep_num=None, json_out=False):
     result = {"anime": anime["title"], "mal_id": mal_id, "episode": ep_num,
               "anikoto_id": info["anikoto_id"], "mewcdn_streams": mewcdn_streams,
               "stream_urls": stream_urls, "downloads": mapper_data.get("downloads",{})}
-    if json_out: log(json.dumps(result, indent=2, ensure_ascii=False))
+    if json_out: print(json.dumps(result, indent=2, ensure_ascii=False))
     else:        _print_result(result, W)
     return result
 
