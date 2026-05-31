@@ -10,6 +10,18 @@ from bs4 import BeautifulSoup
 
 app = Flask(__name__, static_folder="static")
 
+# ── CORS — allow any origin so anigerman.html can call this API ───────────────
+@app.after_request
+def add_cors(response):
+    response.headers["Access-Control-Allow-Origin"]  = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
+
+@app.route("/api/stream", methods=["OPTIONS"])
+def api_stream_preflight():
+    return "", 204
+
 # ── Constants ─────────────────────────────────────────────────────────────────
 BASE        = "https://anikototv.to"
 MAPPER_BASE = "https://mapper.nekostream.site/api/mal"
