@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: anime-stream-finder
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
